@@ -26,7 +26,7 @@
       "title": "Notes & sustain",
       "video": {
         "type": "file",
-        "src": "videos/l1.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L1.sloppak",
@@ -53,7 +53,7 @@
       "title": "Chords & handshapes",
       "video": {
         "type": "file",
-        "src": "videos/l2.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L2.sloppak",
@@ -80,7 +80,7 @@
       "title": "Bends",
       "video": {
         "type": "file",
-        "src": "videos/l3.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L3.sloppak",
@@ -106,7 +106,7 @@
       "title": "Slides",
       "video": {
         "type": "file",
-        "src": "videos/l4.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L4.sloppak",
@@ -132,7 +132,7 @@
       "title": "Hammer-on & pull-off",
       "video": {
         "type": "file",
-        "src": "videos/l5.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L5.sloppak",
@@ -160,7 +160,7 @@
       "title": "Harmonics",
       "video": {
         "type": "file",
-        "src": "videos/l6.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L6.sloppak",
@@ -186,7 +186,7 @@
       "title": "Palm mute",
       "video": {
         "type": "file",
-        "src": "videos/l7.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L7.sloppak",
@@ -212,7 +212,7 @@
       "title": "Muted / dead notes",
       "video": {
         "type": "file",
-        "src": "videos/l8.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L8.sloppak",
@@ -239,7 +239,7 @@
       "title": "Tremolo & taps",
       "video": {
         "type": "file",
-        "src": "videos/l9.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L9.sloppak",
@@ -266,7 +266,7 @@
       "title": "Combined arrangement",
       "video": {
         "type": "file",
-        "src": "videos/l10.webm"
+        "src": ""
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L10.sloppak",

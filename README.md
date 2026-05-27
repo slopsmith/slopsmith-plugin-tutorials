@@ -51,7 +51,7 @@ All under `/api/plugins/tutorials/`:
 | DELETE | `/packs/{id}/lessons/{lesson_id}/thumb` | Remove lesson thumbnail. |
 | POST | `/packs/{id}/sloppaks` | Copy a library sloppak into the pack. |
 | GET | `/packs/{id}/sloppaks/{filename}` | Stream a pack-embedded sloppak. |
-| POST | `/runs` | Record a finished run (local progress + XP relay). |
+| POST | `/runs` | Record a finished run (local progress only; XP is posted directly by the frontend to the minigames plugin). |
 | GET | `/progress` | Per-lesson best score + pass/mastery state. |
 
 ## Generating builtin content
@@ -72,5 +72,3 @@ Slopsmith Docker image which already includes both).
 - Vanilla frontend, no build step.
 - Single-user, atomic writes (temp+rename) for `pack.json` and `progress.json`.
 - Plugin is bundled into `slopsmith-desktop` via the existing plugin-clone CI step.
-</content>
-</invoke>

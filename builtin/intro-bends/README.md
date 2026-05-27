@@ -10,13 +10,16 @@ and the bend + vibrato combo.
 | `videos/l1.webm` | **pending** | ~30–60s instructional clip, half-step bends. |
 | `videos/l2.webm` | **pending** | ~30–60s, full-step bends with accuracy demos. |
 | `videos/l3.webm` | **pending** | ~30–60s, sustained bend + vibrato. |
-| `sloppaks/l1.sloppak` | **pending** | 16-bar loop targeting single-note half-step bends. |
-| `sloppaks/l2.sloppak` | **pending** | 16-bar loop targeting full-step bends at moderate tempo. |
-| `sloppaks/l3.sloppak` | **pending** | 16-bar loop with sustained bends + vibrato. |
+| `sloppaks/Tutorial_Intro_to_Bends_L1.sloppak` | **committed** | 16-bar loop, half-step bends. |
+| `sloppaks/Tutorial_Intro_to_Bends_L2.sloppak` | **committed** | 16-bar loop, full-step bends at tempo. |
+| `sloppaks/Tutorial_Intro_to_Bends_L3.sloppak` | **committed** | 16-bar loop, sustained bends + vibrato. |
+| `cover.png` | **committed** | Pack cover image. |
+| `thumbs/l1.png` | **committed** | Per-lesson thumbnail. |
+| `thumbs/l2.png` | **committed** | Per-lesson thumbnail. |
+| `thumbs/l3.png` | **committed** | Per-lesson thumbnail. |
 
-Until the assets land, the plugin still ships and renders the pack
-structure; lessons just show empty media and a clear "no video / no
-sloppak" state. Once the files are dropped into this directory and
-the plugin reloads, the assets are picked up automatically (the
-seed-on-first-run copy is idempotent — bump the pack id or wipe
-`<CONFIG_DIR>/tutorials/packs/intro-bends/` to force a re-seed).
+Video files are pending — lesson slots show "No video attached" until
+the webm clips are dropped into `videos/` and the plugin reloads. The
+exercise sloppaks, cover, and thumbnails are committed and ship
+immediately. The seed-on-first-run copy is idempotent; to force
+re-seeding, wipe `<CONFIG_DIR>/tutorials/packs/intro-bends/`.

@@ -4,10 +4,13 @@
 
 - **One plugin, many packs.** Packs are pure data under
   `<CONFIG_DIR>/tutorials/packs/<pack_id>/`. Never add per-pack plugins.
-- **XP goes through minigames.** `/api/plugins/tutorials/runs` is a relay
-  that calls the minigames POST `/runs` endpoint with
-  `game_id = "tutorial:<pack_id>:<lesson_id>"`. We do not maintain our own
-  XP ledger — only local progress (best score, completion time) for UI speed.
+- **XP goes through minigames.** The frontend posts a run to both
+  `POST /api/plugins/minigames/runs` (XP, with
+  `game_id = "tutorial:<pack_id>:<lesson_id>"`) and
+  `POST /api/plugins/tutorials/runs` (local progress). There is no
+  server-side relay — the two calls are independent. We do not maintain
+  our own XP ledger; only local progress (best score, pass/mastery state)
+  lives in this plugin.
 - **Sloppak playback is upstream.** Exercises launch via
   `window.playSong(filename, arrangement)`; we never decode chart data here.
   Lesson manifests store DLC-relative paths. Builtin pack sloppaks are seeded

@@ -11,9 +11,9 @@ Each sloppak contains:
   - arrangements/lead.json    note chart in the sloppak v1 JSON shape
 
 Format reference: ~/Repositories/slopsmith/lib/sloppak.py + a real sloppak's
-manifest + arrangement JSON. String indexing follows STANDARD_TUNING_GUITAR
-in lib/gp2rs.py:40 — s=0 is the high E (string 1 in player terms), s=5 is
-the low E (string 6).
+manifest + arrangement JSON. String indexing follows the RS convention per
+lib/gp2rs.py:459 — s=0 is the LOW E (thickest string), s=5 is the HIGH E
+(thinnest string). This is the opposite of GP string numbering.
 
 Audio: a 3-track MIDI file (overdriven lead guitar with pitch-bent bend
 notes, electric bass holding the tonic, drum kit playing a basic backbeat)

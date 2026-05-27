@@ -336,7 +336,7 @@
       } else {
         videoBox.appendChild(el('div', { class: 'tut-empty' }, 'Invalid YouTube URL'));
       }
-    } else if (video.type === 'file' && typeof video.src === 'string') {
+    } else if (video.type === 'file' && video.src && typeof video.src === 'string') {
       const src = video.src.startsWith('http') || video.src.startsWith('/')
         ? video.src
         : `${API_BASE}/packs/${packId}/videos/${encodeURIComponent(video.src.replace(/^videos\//, ''))}`;
