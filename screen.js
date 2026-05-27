@@ -113,14 +113,24 @@
     });
 
     // Subscribe to song-end so we can prompt the user to record the run.
-    // Only subscribe once: on the first execution window.slopsmithTutorials
-    // is undefined (falsy), so the guard passes; on plugin reloads the
-    // public surface is already alive and we skip re-subscription to avoid
-    // duplicate onSongEnded calls.
+    // The stable wrapper below dispatches to _onSongEnded, which is updated
+    // on every reload so it always calls the current IIFE's onSongEnded and
+    // therefore reads the current state.  Registering a stable wrapper means
+    // we only call slopsmith.on() once even across plugin reloads.
     if (!window.slopsmithTutorials?.__alive) {
       if (window.slopsmith && typeof window.slopsmith.on === 'function') {
-        window.slopsmith.on('song:ended', onSongEnded);
+        window.slopsmith.on('song:ended', () => {
+          // Dispatch through the singleton so hot-reload sees current state.
+          if (window.slopsmithTutorials?._onSongEnded) {
+            window.slopsmithTutorials._onSongEnded();
+          }
+        });
       }
+    }
+    // Always point the singleton at this IIFE's handler so the registered
+    // wrapper above always dispatches to the most recent onSongEnded closure.
+    if (window.slopsmithTutorials) {
+      window.slopsmithTutorials._onSongEnded = onSongEnded;
     }
 
     // Pick up navigation payloads (e.g. another plugin deep-linking us).
@@ -881,9 +891,11 @@
       formRow('Techniques', techNode),
     ));
     node.appendChild(twoCol(
-      formRow('XP — pass', xpPassInput),
-      formRow('XP — mastery', xpMastInput),
+      formRow('XP — pass (informational)', xpPassInput),
+      formRow('XP — mastery (informational)', xpMastInput),
     ));
+    node.appendChild(el('p', { style: 'margin:0 0 0.5rem;color:var(--tut-muted);font-size:0.8rem' },
+      'XP values are saved in the manifest for future use. Currently all lessons award a fixed XP amount through the minigames profile regardless of these fields.'));
     node.appendChild(el('div', { class: 'tut-row-buttons' }, [removeBtn]));
     return node;
   }
@@ -1133,6 +1145,7 @@
   window.slopsmithTutorials = {
     __alive: true,
     refresh: refreshAndRender,
+    _onSongEnded: onSongEnded,  // kept current by init() on every (re)load
   };
 
   // Hydration timing: the host plugin loader removes and re-appends the
