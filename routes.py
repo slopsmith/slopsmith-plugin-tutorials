@@ -154,26 +154,31 @@ def _validate_manifest(manifest: dict, pack_id: str) -> None:
         if lid in seen_ids:
             raise HTTPException(400, f"duplicate lesson id: {lid}")
         seen_ids.add(lid)
-        # Validate threshold shapes so that record_run never hits an
-        # AttributeError when comparing run.accuracy against non-numeric
-        # thresholds saved via a manual PUT.
+        # Validate threshold shapes so that record_run never hits a
+        # TypeError when comparing run.accuracy against a null/non-numeric
+        # threshold saved via a manual PUT.  We check for the key being
+        # present (via `in`) rather than truthy so that explicit JSON null
+        # (`"accuracy": null`) is caught — `.get()` returns None for both
+        # missing and null-valued keys.
         pass_thr = lesson.get("pass")
         if pass_thr is not None:
             if not isinstance(pass_thr, dict):
                 raise HTTPException(400, f"lesson {lid}: pass must be an object")
-            acc = pass_thr.get("accuracy")
-            if acc is not None and not isinstance(acc, (int, float)):
-                raise HTTPException(400, f"lesson {lid}: pass.accuracy must be numeric")
+            if "accuracy" in pass_thr:
+                acc = pass_thr["accuracy"]
+                if not isinstance(acc, (int, float)) or isinstance(acc, bool):
+                    raise HTTPException(400, f"lesson {lid}: pass.accuracy must be numeric")
         mastery = lesson.get("mastery")
         if mastery is not None:
             if not isinstance(mastery, dict):
                 raise HTTPException(400, f"lesson {lid}: mastery must be an object")
             for field in ("accuracy", "speed"):
-                val = mastery.get(field)
-                if val is not None and not isinstance(val, (int, float)):
-                    raise HTTPException(
-                        400, f"lesson {lid}: mastery.{field} must be numeric"
-                    )
+                if field in mastery:
+                    val = mastery[field]
+                    if not isinstance(val, (int, float)) or isinstance(val, bool):
+                        raise HTTPException(
+                            400, f"lesson {lid}: mastery.{field} must be numeric"
+                        )
 
 
 def _find_cover_file(pack_id: str) -> Path | None:

@@ -662,15 +662,26 @@
         manifest.techniques = readTagInput('pack-techniques');
         manifest.lessons = Array.from(lessonsHost.querySelectorAll('[data-lesson-editor]'))
           .map((node) => readLessonEditor(node));
+        // Strip derived/response-only fields before PUT so they are never
+        // persisted to pack.json. _enrich_manifest adds cover_url / thumb_url
+        // at read-time from the filesystem; writing them back would cause stale
+        // URLs to survive after the underlying file is removed.
+        const cleanManifest = Object.assign({}, manifest);
+        delete cleanManifest.cover_url;
+        cleanManifest.lessons = (cleanManifest.lessons || []).map((l) => {
+          const cl = Object.assign({}, l);
+          delete cl.thumb_url;
+          return cl;
+        });
         // Verbose log so misbehaving saves can be diagnosed from devtools.
-        console.log('[tutorials] Save pack — payload:', JSON.parse(JSON.stringify(manifest)));
+        console.log('[tutorials] Save pack — payload:', JSON.parse(JSON.stringify(cleanManifest)));
         saveStatus.style.color = 'var(--tut-muted)';
         saveStatus.textContent = 'Saving…';
         try {
           await api(`/packs/${manifest.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(manifest),
+            body: JSON.stringify(cleanManifest),
           });
           saveStatus.style.color = 'var(--tut-good)';
           saveStatus.textContent = `Saved at ${new Date().toLocaleTimeString()}`;
