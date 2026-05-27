@@ -168,6 +168,8 @@ def _validate_manifest(manifest: dict, pack_id: str) -> None:
                 acc = pass_thr["accuracy"]
                 if not isinstance(acc, (int, float)) or isinstance(acc, bool):
                     raise HTTPException(400, f"lesson {lid}: pass.accuracy must be numeric")
+                if not (0.0 <= float(acc) <= 1.0):
+                    raise HTTPException(400, f"lesson {lid}: pass.accuracy must be in [0, 1]")
         mastery = lesson.get("mastery")
         if mastery is not None:
             if not isinstance(mastery, dict):
@@ -178,6 +180,14 @@ def _validate_manifest(manifest: dict, pack_id: str) -> None:
                     if not isinstance(val, (int, float)) or isinstance(val, bool):
                         raise HTTPException(
                             400, f"lesson {lid}: mastery.{field} must be numeric"
+                        )
+                    if field == "accuracy" and not (0.0 <= float(val) <= 1.0):
+                        raise HTTPException(
+                            400, f"lesson {lid}: mastery.accuracy must be in [0, 1]"
+                        )
+                    if field == "speed" and float(val) <= 0:
+                        raise HTTPException(
+                            400, f"lesson {lid}: mastery.speed must be positive"
                         )
 
 

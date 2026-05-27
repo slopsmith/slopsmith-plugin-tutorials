@@ -346,6 +346,7 @@
       if (ytId) {
         videoBox.appendChild(el('iframe', {
           src: `https://www.youtube.com/embed/${ytId}?modestbranding=1&rel=0`,
+          title: `Tutorial video: ${lesson.title || lesson.id}`,
           allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
           allowfullscreen: '',
         }));
@@ -1088,7 +1089,7 @@
     function addChip(value) {
       const chip = el('span', { class: 'tut-tag-chip', dataset: { value } }, [
         value,
-        el('button', { type: 'button', onclick: () => chip.remove() }, '×'),
+        el('button', { type: 'button', 'aria-label': `Remove tag ${value}`, onclick: () => chip.remove() }, '×'),
       ]);
       host.insertBefore(chip, input);
     }
