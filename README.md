@@ -10,8 +10,9 @@ play the paired exercise, earn XP through the minigames profile.
 - Top-nav "Tutorials" entry exposes three modes:
   - **Browse** — pack grid + lesson list.
   - **Lesson** — video player + "Start exercise" → uses core `window.playSong`
-    to launch the paired sloppak. On finish, posts a run that is relayed to
-    the minigames XP endpoint.
+    to launch the paired sloppak. When the song ends, the user is prompted to
+    enter their accuracy and manually submit a run. Submission posts to the
+    minigames XP endpoint and records local pass/mastery state independently.
   - **Author** — pack/lesson editor with video upload (webm/mp4) or YouTube
     URL, sloppak picker, pass/mastery thresholds, technique tags.
 - All XP flows through `/api/plugins/minigames/runs`, so streaks, level, and

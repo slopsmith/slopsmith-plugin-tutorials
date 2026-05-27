@@ -33,6 +33,7 @@ import tempfile
 import threading
 import time
 from pathlib import Path
+from urllib.parse import quote as _url_quote
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
@@ -185,9 +186,11 @@ def _validate_manifest(manifest: dict, pack_id: str) -> None:
                         raise HTTPException(
                             400, f"lesson {lid}: mastery.accuracy must be in [0, 1]"
                         )
-                    if field == "speed" and float(val) <= 0:
+                    if field == "speed" and (float(val) <= 0 or float(val) > 2.0):
                         raise HTTPException(
-                            400, f"lesson {lid}: mastery.speed must be positive"
+                            400,
+                            f"lesson {lid}: mastery.speed must be in (0, 2] "
+                            "(matches RunRecord.speed upper bound)"
                         )
 
 
@@ -836,9 +839,10 @@ def setup(app: FastAPI, context: dict) -> None:
         dst = sloppaks_dir / src_resolved.name
         with _lock:
             shutil.copy2(src_resolved, dst)
+        encoded_name = _url_quote(src_resolved.name, safe="")
         return {
             "filename": src_resolved.name,
-            "url":      f"/api/plugins/{PLUGIN_ID}/packs/{pack_id}/sloppaks/{src_resolved.name}",
+            "url":      f"/api/plugins/{PLUGIN_ID}/packs/{pack_id}/sloppaks/{encoded_name}",
         }
 
     # ── Local progress ───────────────────────────────────────────────────
