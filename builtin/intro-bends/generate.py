@@ -622,9 +622,14 @@ def main() -> None:
             except OSError:
                 pass
 
-        # Copy into the DLC dir so the library scanner picks it up.
+        # Copy into the tutorials-builtin subdirectory so the regenerated
+        # sloppak is immediately playable via playSong.  The manifest uses
+        # DLC-relative paths of the form tutorials-builtin/intro-bends/<file>,
+        # so the copy target must match that subdirectory structure.
         if str(args.dlc) != "-" and args.dlc.is_dir():
-            target = args.dlc / sloppak_name
+            target_dir = args.dlc / "tutorials-builtin" / "intro-bends"
+            target_dir.mkdir(parents=True, exist_ok=True)
+            target = target_dir / sloppak_name
             shutil.copy2(out_path, target)
             print(f"  copied to {target}")
         else:

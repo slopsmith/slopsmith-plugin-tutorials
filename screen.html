@@ -56,7 +56,7 @@
     background: transparent; border: 0; color: var(--tut-muted);
     padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 500;
   }
-  #plugin-tutorials .tut-mode[aria-selected="true"] { background: var(--tut-border); color: var(--tut-text); }
+  #plugin-tutorials .tut-mode[aria-pressed="true"] { background: var(--tut-border); color: var(--tut-text); }
   #plugin-tutorials .tut-root { min-height: 60vh; }
   #plugin-tutorials .tut-loading,
   #plugin-tutorials .tut-empty {
@@ -229,9 +229,9 @@
     <h1>Tutorials</h1>
     <p class="tut-subtitle">Watch, then drill. Earn XP for every pass.</p>
   </div>
-  <nav class="tut-modes" role="tablist">
-    <button type="button" class="tut-mode" data-mode="browse" aria-selected="true">Browse</button>
-    <button type="button" class="tut-mode" data-mode="author">Author</button>
+  <nav class="tut-modes" aria-label="Tutorials mode">
+    <button type="button" class="tut-mode" data-mode="browse" aria-pressed="true">Browse</button>
+    <button type="button" class="tut-mode" data-mode="author" aria-pressed="false">Author</button>
   </nav>
 </header>
 <main id="tutorials-root" class="tut-root">

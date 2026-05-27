@@ -158,7 +158,7 @@
     root.innerHTML = '';
     state.renderToken += 1;
     document.querySelectorAll('#plugin-tutorials .tut-mode').forEach((btn) => {
-      btn.setAttribute('aria-selected', btn.dataset.mode === state.mode ? 'true' : 'false');
+      btn.setAttribute('aria-pressed', btn.dataset.mode === state.mode ? 'true' : 'false');
     });
 
     if (state.mode === 'author') {
@@ -232,7 +232,9 @@
     const p = state.progress.packs?.[pack.id];
     if (!p || !pack.lesson_count) return 0;
     const passed = Object.values(p.lessons || {}).filter((l) => l && l.passed).length;
-    return Math.round((passed / pack.lesson_count) * 100);
+    // Clamp to 100 so stale progress entries (from removed lessons or a
+    // recreated pack with fewer lessons) cannot push the bar above 100%.
+    return Math.min(100, Math.round((passed / pack.lesson_count) * 100));
   }
 
   // ── Pack detail (lesson list) ─────────────────────────────────────────
@@ -447,6 +449,14 @@
     // primed. Future: read accuracy from the event detail when the
     // highway publishes one.
     if (!state.pendingRun) return;
+    // Guard: only show the prompt if the user is still on the lesson that
+    // triggered the exercise.  If they navigated away (or started a different
+    // lesson) before the song ended, suppress the stale prompt.
+    const { packId, lessonId } = state.pendingRun;
+    if (state.activePackId !== packId || state.activeLessonId !== lessonId) {
+      state.pendingRun = null;
+      return;
+    }
     // Surface a quick toast hint in the result box if we're still on the
     // lesson view.  Don't navigate — the user may want to replay.
     const resultBox = document.querySelector('#plugin-tutorials .tut-result');

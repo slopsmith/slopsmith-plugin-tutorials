@@ -1769,7 +1769,11 @@ def main() -> None:
                 pass
 
         if str(args.dlc) != "-" and args.dlc.is_dir():
-            target = args.dlc / sloppak_name
+            # Copy to the same subdirectory that setup() seeds into at runtime,
+            # so regenerated sloppaks are immediately playable via playSong.
+            target_dir = args.dlc / "tutorials-builtin" / PACK_ID
+            target_dir.mkdir(parents=True, exist_ok=True)
+            target = target_dir / sloppak_name
             shutil.copy2(out_path, target)
             print(f"  copied to {target}")
 
