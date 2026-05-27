@@ -112,27 +112,6 @@
       btn.addEventListener('click', () => setMode(btn.dataset.mode));
     });
 
-    // Subscribe to song-end so we can prompt the user to record the run.
-    // The stable wrapper below dispatches to _onSongEnded, which is updated
-    // on every reload so it always calls the current IIFE's onSongEnded and
-    // therefore reads the current state.  Registering a stable wrapper means
-    // we only call slopsmith.on() once even across plugin reloads.
-    if (!window.slopsmithTutorials?.__alive) {
-      if (window.slopsmith && typeof window.slopsmith.on === 'function') {
-        window.slopsmith.on('song:ended', () => {
-          // Dispatch through the singleton so hot-reload sees current state.
-          if (window.slopsmithTutorials?._onSongEnded) {
-            window.slopsmithTutorials._onSongEnded();
-          }
-        });
-      }
-    }
-    // Always point the singleton at this IIFE's handler so the registered
-    // wrapper above always dispatches to the most recent onSongEnded closure.
-    if (window.slopsmithTutorials) {
-      window.slopsmithTutorials._onSongEnded = onSongEnded;
-    }
-
     // Pick up navigation payloads (e.g. another plugin deep-linking us).
     if (window.slopsmith && typeof window.slopsmith.getNavParams === 'function') {
       const params = window.slopsmith.getNavParams();
@@ -1138,10 +1117,11 @@
   // loadPlugins() pass; when the IIFE re-runs, module-level state and the
   // global event subscription already exist — just re-hydrate the DOM.
   if (window.slopsmithTutorials && window.slopsmithTutorials.__alive) {
-    // Update the public refresh handle so it points to this invocation's
-    // refreshAndRender closure, then re-run init to rebind mode buttons
-    // and the tutorials-root to the freshly-inserted DOM nodes.
+    // Update the public handles so they point to this invocation's closures,
+    // then re-run init to rebind mode buttons and the tutorials-root to the
+    // freshly-inserted DOM nodes.
     window.slopsmithTutorials.refresh = refreshAndRender;
+    window.slopsmithTutorials._onSongEnded = onSongEnded;
     init();
     return;
   }
@@ -1149,8 +1129,20 @@
   window.slopsmithTutorials = {
     __alive: true,
     refresh: refreshAndRender,
-    _onSongEnded: onSongEnded,  // kept current by init() on every (re)load
+    _onSongEnded: onSongEnded,
   };
+
+  // Register the stable song:ended wrapper exactly once (on first load).
+  // It dispatches through the singleton so hot-reloads always call the
+  // current IIFE's onSongEnded closure.  The singleton exists at this point
+  // so the guard in init() is no longer needed.
+  if (window.slopsmith && typeof window.slopsmith.on === 'function') {
+    window.slopsmith.on('song:ended', () => {
+      if (window.slopsmithTutorials?._onSongEnded) {
+        window.slopsmithTutorials._onSongEnded();
+      }
+    });
+  }
 
   // Hydration timing: the host plugin loader removes and re-appends the
   // plugin's screen.html on each loadPlugins() pass, so DOMContentLoaded

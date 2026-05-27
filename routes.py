@@ -860,10 +860,16 @@ def setup(app: FastAPI, context: dict) -> None:
         if not lesson:
             raise HTTPException(404, f"Lesson not found: {run.lesson_id}")
 
-        pass_thr = (lesson.get("pass") or {}).get("accuracy", 0.7)
+        # Use `or` defaults to guard against explicit JSON null values in
+        # on-disk manifests edited outside the API (e.g., direct file edits
+        # that bypass _validate_manifest).  `.get(key, default)` returns None
+        # when the key is present but null-valued; the `or` below coerces that
+        # None to the safe default so the comparisons below never raise TypeError.
+        _pass = lesson.get("pass") or {}
+        pass_thr = _pass.get("accuracy") if _pass.get("accuracy") is not None else 0.7
         mastery = lesson.get("mastery") or {}
-        mastery_acc = mastery.get("accuracy", 0.9)
-        mastery_speed = mastery.get("speed", 1.0)
+        mastery_acc = mastery.get("accuracy") if mastery.get("accuracy") is not None else 0.9
+        mastery_speed = mastery.get("speed") if mastery.get("speed") is not None else 1.0
 
         passed = run.accuracy >= pass_thr
         mastered = (run.accuracy >= mastery_acc) and (run.speed >= mastery_speed)
