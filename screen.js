@@ -826,7 +826,7 @@
 
     const arrInput = el('input', {
       type: 'text', value: lesson.exercise?.arrangement || '',
-      placeholder: 'arrangement id (optional)', dataset: { field: 'arrangement' },
+      placeholder: 'arrangement index 0, 1, 2… (optional)', dataset: { field: 'arrangement' },
     });
     const passInput = el('input', {
       type: 'number', min: '0', max: '1', step: '0.05',
