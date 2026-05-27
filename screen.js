@@ -60,6 +60,7 @@
     activeLessonId: null,
     libraryFiles: null,              // lazy-loaded for author mode (sloppak picker)
     pendingRun: null,                // { packId, lessonId } — waiting on song:ended
+    renderToken: 0,                  // incremented on each render(); async renderers bail if stale
   };
 
   // ── Bootstrap ─────────────────────────────────────────────────────────
@@ -155,6 +156,7 @@
     const root = document.getElementById('tutorials-root');
     if (!root) return;
     root.innerHTML = '';
+    state.renderToken += 1;
     document.querySelectorAll('#plugin-tutorials .tut-mode').forEach((btn) => {
       btn.setAttribute('aria-selected', btn.dataset.mode === state.mode ? 'true' : 'false');
     });
@@ -164,8 +166,8 @@
       return;
     }
     switch (state.view.kind) {
-      case 'pack':   return renderPackDetail(root);
-      case 'lesson': return renderLesson(root);
+      case 'pack':   return renderPackDetail(root, state.renderToken);
+      case 'lesson': return renderLesson(root, state.renderToken);
       default:       return renderBrowse(root);
     }
   }
@@ -197,13 +199,17 @@
 
   function packCard(pack) {
     const progress = packProgressPct(pack);
+    const openPack = () => {
+      state.activePackId = pack.id;
+      state.view = { kind: 'pack' };
+      render();
+    };
     const card = el('article', {
       class: 'tut-pack-card',
-      onclick: () => {
-        state.activePackId = pack.id;
-        state.view = { kind: 'pack' };
-        render();
-      },
+      role: 'button',
+      tabindex: '0',
+      onclick: openPack,
+      onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPack(); } },
     }, [
       pack.cover_url
         ? el('div', { class: 'tut-pack-cover' },
@@ -231,16 +237,18 @@
 
   // ── Pack detail (lesson list) ─────────────────────────────────────────
 
-  async function renderPackDetail(root) {
+  async function renderPackDetail(root, token) {
     const packId = state.activePackId;
     if (!packId) { state.view = { kind: 'browse' }; return render(); }
     let manifest;
     try {
       manifest = await api(`/packs/${packId}`);
     } catch (err) {
+      if (state.renderToken !== token) return;
       root.appendChild(el('div', { class: 'tut-empty' }, `Could not load pack: ${err.message}`));
       return;
     }
+    if (state.renderToken !== token) return;
     const progress = state.progress.packs?.[packId]?.lessons || {};
     const back = el('button', {
       class: 'tut-btn tut-btn-ghost',
@@ -256,21 +264,25 @@
     const list = el('div', { class: 'tut-lesson-list' });
     (manifest.lessons || []).forEach((lesson, idx) => {
       const st = progress[lesson.id] || {};
-      const stateLabel = st.mastered ? 'Mastered' : st.passed ? 'Passed' : 'Locked';
+      const stateLabel = st.mastered ? 'Mastered' : st.passed ? 'Passed' : 'Not started';
       const stateClass = st.mastered ? 'is-mastery' : st.passed ? 'is-pass' : '';
       const hasThumb = !!lesson.thumb_url;
       const rowStyle = hasThumb
         ? `background-image:url('${lesson.thumb_url}?v=${Date.now()}')`
         : '';
       const rowClass = hasThumb ? 'tut-lesson-row has-thumb' : 'tut-lesson-row';
+      const openLesson = () => {
+        state.activeLessonId = lesson.id;
+        state.view = { kind: 'lesson' };
+        render();
+      };
       list.appendChild(el('div', {
         class: rowClass,
         style: rowStyle,
-        onclick: () => {
-          state.activeLessonId = lesson.id;
-          state.view = { kind: 'lesson' };
-          render();
-        },
+        role: 'button',
+        tabindex: '0',
+        onclick: openLesson,
+        onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLesson(); } },
       }, [
         el('div', { class: 'tut-lesson-overlay' }),
         el('div', { class: 'tut-lesson-meta', style: 'flex:1' }, [
@@ -290,7 +302,7 @@
 
   // ── Lesson player ─────────────────────────────────────────────────────
 
-  async function renderLesson(root) {
+  async function renderLesson(root, token) {
     const packId = state.activePackId;
     const lessonId = state.activeLessonId;
     if (!packId || !lessonId) { state.view = { kind: 'browse' }; return render(); }
@@ -299,9 +311,11 @@
     try {
       manifest = await api(`/packs/${packId}`);
     } catch (err) {
+      if (state.renderToken !== token) return;
       root.appendChild(el('div', { class: 'tut-empty' }, `Could not load pack: ${err.message}`));
       return;
     }
+    if (state.renderToken !== token) return;
     const lesson = (manifest.lessons || []).find((l) => l.id === lessonId);
     if (!lesson) {
       root.appendChild(el('div', { class: 'tut-empty' }, 'Lesson not found in pack.'));
