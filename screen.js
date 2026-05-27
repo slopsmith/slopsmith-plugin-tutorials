@@ -401,10 +401,14 @@
         // Core's playSong forwards `arrangement` straight into the highway
         // WS query string, and the server types it as int (default -1 =
         // server picks). A string id like "lead" fails the int coercion
-        // and the WS rejects with 403. Only forward if it parses as a
-        // non-negative integer; otherwise let the server choose.
-        const arrIdx = Number.parseInt(ex.arrangement, 10);
-        const arrArg = Number.isFinite(arrIdx) && arrIdx >= 0 ? arrIdx : undefined;
+        // and the WS rejects with 403. Only forward if the arrangement
+        // value is a strict non-negative integer string (no partial matches
+        // like "1abc" which parseInt would accept).
+        // Coerce to string first — the JSON value may be a number.  Use
+        // nullish-coalescing so a numeric 0 is preserved (0 || '' is '').
+        const arrStr = String(ex.arrangement ?? '').trim();
+        const arrIdx = /^\d+$/.test(arrStr) ? Number.parseInt(arrStr, 10) : -1;
+        const arrArg = arrIdx >= 0 ? arrIdx : undefined;
         if (typeof window.playSong !== 'function') {
           alert('window.playSong is unavailable — is core slopsmith loaded?');
           return;

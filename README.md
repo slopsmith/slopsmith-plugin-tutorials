@@ -65,8 +65,11 @@ cd builtin/intro-bends && python3 generate.py
 cd builtin/reading-the-highway && python3 generate.py
 ```
 
-Requires `fluidsynth` and `FluidR3_GM.sf2` on the host (or run inside the
-Slopsmith Docker image which already includes both).
+Requires the following on the host (all pre-installed in the Slopsmith Docker image):
+
+- `fluidsynth` + `FluidR3_GM.sf2` soundfont
+- `ffmpeg`
+- Python packages: `mido`, `Pillow`, `PyYAML`
 
 ## Constitutional notes
 
