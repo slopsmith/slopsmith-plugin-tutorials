@@ -141,6 +141,19 @@
     render();
   }
 
+  // Refresh the packs list in the background without rebuilding the current
+  // view.  Used after cover/thumbnail uploads so the Browse-side pack card
+  // picks up a fresh cover_url on the next navigation without destroying any
+  // unsaved Author form state in the current view.
+  async function refreshPacksOnly() {
+    try {
+      const res = await api('/packs');
+      state.packs = res.packs || [];
+    } catch (err) {
+      console.error('[tutorials] background pack refresh failed', err);
+    }
+  }
+
   function render() {
     const root = document.getElementById('tutorials-root');
     if (!root) return;
@@ -954,8 +967,12 @@
         const r = await fetch(`${API_BASE}/packs/${manifest.id}/cover`, { method: 'POST', body: fd });
         if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`);
         refreshPreview();
-        // Bust caches on the browse-side card too.
-        await refreshAndRender();
+        // Await the background pack-list refresh so that Browse-side card
+        // cover_url metadata is up to date if the user navigates away.
+        // Using refreshPacksOnly (not refreshAndRender) avoids rebuilding
+        // the Author form and discarding any unsaved lesson/title/threshold
+        // edits currently in the form.
+        await refreshPacksOnly();
       } catch (err) {
         alert(`Cover upload failed: ${err.message}`);
       } finally {
@@ -968,9 +985,12 @@
       onclick: async () => {
         if (!confirm('Remove the cover image?')) return;
         try {
-          await fetch(`${API_BASE}/packs/${manifest.id}/cover`, { method: 'DELETE' });
+          const dr = await fetch(`${API_BASE}/packs/${manifest.id}/cover`, { method: 'DELETE' });
+          if (!dr.ok) throw new Error((await dr.json().catch(() => ({}))).detail || `HTTP ${dr.status}`);
           refreshPreview();
-          await refreshAndRender();
+          // Await the background pack-list refresh; same rationale as the
+          // cover upload path above.
+          await refreshPacksOnly();
         } catch (err) {
           alert(`Cover remove failed: ${err.message}`);
         }
