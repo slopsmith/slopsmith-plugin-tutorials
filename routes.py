@@ -651,8 +651,10 @@ def setup(app: FastAPI, context: dict) -> None:
     @app.delete(f"/api/plugins/{PLUGIN_ID}/packs/{{pack_id}}/cover")
     def delete_cover(pack_id: str):
         _validate_id(pack_id, "pack")
-        deleted = []
         pdir = _pack_dir(pack_id)
+        if not pdir.is_dir():
+            raise HTTPException(404, f"Pack not found: {pack_id}")
+        deleted = []
         for stale in pdir.glob("cover.*"):
             try:
                 stale.unlink()
@@ -767,6 +769,8 @@ def setup(app: FastAPI, context: dict) -> None:
         _validate_id(pack_id, "pack")
         _validate_id(lesson_id, "lesson")
         pdir = _pack_dir(pack_id)
+        if not pdir.is_dir():
+            raise HTTPException(404, f"Pack not found: {pack_id}")
         thumbs_dir = pdir / "thumbs"
         deleted = []
         if thumbs_dir.is_dir():

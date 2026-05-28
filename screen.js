@@ -832,7 +832,9 @@
     }, 'Copy into pack');
 
     const arrInput = el('input', {
-      type: 'text', value: lesson.exercise?.arrangement || '',
+      // Use nullish coalescing so a numeric 0 index is preserved.
+      // `|| ''` would treat 0 as falsy and blank the field.
+      type: 'text', value: lesson.exercise?.arrangement ?? '',
       placeholder: 'arrangement index 0, 1, 2… (optional)', dataset: { field: 'arrangement' },
     });
     const passInput = el('input', {
@@ -1057,7 +1059,8 @@
         if (!lessonId) return;
         if (!confirm(`Remove thumbnail for "${lessonId}"?`)) return;
         try {
-          await fetch(`${API_BASE}/packs/${packId}/lessons/${encodeURIComponent(lessonId)}/thumb`, { method: 'DELETE' });
+          const dr = await fetch(`${API_BASE}/packs/${packId}/lessons/${encodeURIComponent(lessonId)}/thumb`, { method: 'DELETE' });
+          if (!dr.ok) throw new Error((await dr.json().catch(() => ({}))).detail || `HTTP ${dr.status}`);
           refresh();
         } catch (err) {
           alert(`Remove failed: ${err.message}`);
