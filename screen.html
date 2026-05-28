@@ -16,26 +16,35 @@
      and leak the tutorials UI under every other screen. Layout properties
      gate on `.active`; styling-only props (colors, fonts, CSS vars) stay
      on the bare id so children inherit them regardless of visibility. */
+  /* Palette mapped to the app's shared design tokens (see
+     static/index.html tailwind.config) so the Tutorials screen matches
+     the rest of Slopsmith — same dark surfaces and accent the Minigames
+     hub uses. Font is intentionally NOT overridden so we inherit the
+     host app font, like Minigames does. */
   #plugin-tutorials {
-    --tut-bg: #0d0f14;
-    --tut-panel: #161a22;
-    --tut-border: #262c38;
-    --tut-text: #e6eaf2;
-    --tut-muted: #8c93a3;
-    --tut-accent: #7aa8ff;
+    --tut-bg: #050508;          /* dark-900 — page background */
+    --tut-panel: #0a0a12;       /* dark-800 — cards, modals */
+    --tut-border: #10101e;      /* dark-700 — borders, secondary buttons */
+    --tut-border-hover: #181830;/* dark-600 — hover surfaces */
+    --tut-text: #ffffff;        /* text-white */
+    --tut-muted: #9ca3af;       /* gray-400 */
+    --tut-accent: #4080e0;      /* accent.DEFAULT */
+    --tut-accent-light: #60a0ff;/* accent.light */
     --tut-good: #5ed29a;
     --tut-warn: #f0b04f;
     --tut-bad: #e06868;
     color: var(--tut-text);
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   }
   #plugin-tutorials.active {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    /* Core navbar is `fixed top-0 h-16` (4 rem). Match the home screen's
-       pt-24 convention so the page title isn't tucked under it. */
-    padding: 5rem 1.25rem 2rem;
+    /* Match the Minigames hub: max-w-5xl (64rem) centered, px-6 pt-24
+       pb-16. Core navbar is `fixed top-0 h-16`; pt-24 (6rem) clears it. */
+    width: 100%;
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 6rem 1.5rem 4rem;
   }
   #plugin-tutorials .tut-header {
     display: flex;
@@ -45,8 +54,8 @@
     border-bottom: 1px solid var(--tut-border);
     padding-bottom: 0.75rem;
   }
-  #plugin-tutorials .tut-title h1 { font-size: 1.5rem; margin: 0 0 0.15rem; }
-  #plugin-tutorials .tut-subtitle { margin: 0; color: var(--tut-muted); font-size: 0.9rem; }
+  #plugin-tutorials .tut-title h1 { font-size: 2.25rem; font-weight: 700; line-height: 1.1; margin: 0 0 0.25rem; }
+  #plugin-tutorials .tut-subtitle { margin: 0; color: var(--tut-muted); font-size: 0.875rem; }
   #plugin-tutorials .tut-modes {
     display: flex; gap: 0.25rem;
     background: var(--tut-panel); border: 1px solid var(--tut-border);
@@ -83,7 +92,7 @@
   #plugin-tutorials .tut-pack-cover-placeholder {
     display: flex; align-items: center; justify-content: center;
     color: var(--tut-muted); font-size: 2.5rem; font-weight: 700;
-    background: linear-gradient(135deg, #1d2230 0%, #2a3046 100%);
+    background: linear-gradient(135deg, #0a0a12 0%, #181830 100%);
   }
   #plugin-tutorials .tut-cover-preview {
     width: 120px; height: 68px; border-radius: 6px; overflow: hidden;
@@ -119,13 +128,16 @@
   #plugin-tutorials .tut-exercise h2 { margin: 0 0 0.3rem; font-size: 1.2rem; }
   #plugin-tutorials .tut-thresholds { color: var(--tut-muted); font-size: 0.9rem; margin: 0 0 1rem; }
   #plugin-tutorials .tut-btn {
-    background: var(--tut-accent); color: #0b1020; border: 0;
+    background: var(--tut-accent); color: #ffffff; border: 0;
     padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer;
+    transition: background-color 120ms;
   }
+  #plugin-tutorials .tut-btn:hover:not([disabled]) { background: var(--tut-accent-light); }
   #plugin-tutorials .tut-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
   #plugin-tutorials .tut-btn-ghost {
-    background: transparent; color: var(--tut-text); border: 1px solid var(--tut-border);
+    background: var(--tut-border); color: var(--tut-text); border: 0;
   }
+  #plugin-tutorials .tut-btn-ghost:hover:not([disabled]) { background: var(--tut-border-hover); }
   #plugin-tutorials .tut-result {
     margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px;
     border: 1px solid var(--tut-border); background: var(--tut-bg);
@@ -139,7 +151,7 @@
   #plugin-tutorials .tut-lesson-row {
     position: relative; display: flex; justify-content: space-between;
     align-items: center; gap: 0.75rem;
-    background: linear-gradient(135deg, #1d2230 0%, #2a3046 100%);
+    background: linear-gradient(135deg, #0a0a12 0%, #181830 100%);
     background-size: cover; background-position: center;
     border: 1px solid var(--tut-border);
     border-radius: 12px; padding: 1rem 1.25rem; cursor: pointer;
@@ -150,27 +162,42 @@
     border-color: var(--tut-accent);
     transform: translateY(-1px);
   }
-  /* Dark gradient overlay so the title + tags + state read against
-     whatever colour the thumbnail brings. Brighter on the edges, slight
-     dip in the middle so the image still shows through. */
+  /* When a lesson has a thumbnail, stack a full banner on top of a caption
+     strip. The thumbs are self-contained 5:1 banners; the .tut-lesson-thumb
+     box is locked to that aspect ratio and `contain`s the image so 100% of
+     it is always visible and it only ever scales uniformly with the
+     viewport (never crops/reframes on resize). The lesson name + status
+     live in the caption below, so names stay visible without covering art. */
+  #plugin-tutorials .tut-lesson-row.has-thumb {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    min-height: 0;
+  }
+  #plugin-tutorials .tut-lesson-thumb {
+    width: 100%;
+    aspect-ratio: 5 / 1;
+    background-color: var(--tut-bg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #plugin-tutorials .tut-lesson-caption {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 0.75rem; padding: 0.6rem 1rem;
+    border-top: 1px solid var(--tut-border);
+  }
+  /* Dark gradient overlay (used only by no-thumbnail rows) so the title +
+     tags + state read against the placeholder gradient. */
   #plugin-tutorials .tut-lesson-overlay {
     position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(
       90deg,
-      rgba(13,15,20,0.88) 0%,
-      rgba(13,15,20,0.55) 35%,
-      rgba(13,15,20,0.55) 65%,
-      rgba(13,15,20,0.88) 100%
-    );
-  }
-  #plugin-tutorials .tut-lesson-row.has-thumb .tut-lesson-overlay {
-    /* Slightly darker when there's an actual photo behind the text */
-    background: linear-gradient(
-      90deg,
-      rgba(13,15,20,0.92) 0%,
-      rgba(13,15,20,0.60) 35%,
-      rgba(13,15,20,0.60) 65%,
-      rgba(13,15,20,0.92) 100%
+      rgba(5,5,8,0.88) 0%,
+      rgba(5,5,8,0.55) 35%,
+      rgba(5,5,8,0.55) 65%,
+      rgba(5,5,8,0.88) 100%
     );
   }
   #plugin-tutorials .tut-lesson-meta,

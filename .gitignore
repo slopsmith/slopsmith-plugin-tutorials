@@ -8,3 +8,6 @@ __pycache__/
 # OS noise
 .DS_Store
 Thumbs.db
+
+# Stray artifact emitted by a runaway agent run — never commit it
+thumbnail-prompt.txt

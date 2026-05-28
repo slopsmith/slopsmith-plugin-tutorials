@@ -271,34 +271,40 @@
       const stateLabel = st.mastered ? 'Mastered' : st.passed ? 'Passed' : 'Not started';
       const stateClass = st.mastered ? 'is-mastery' : st.passed ? 'is-pass' : '';
       const hasThumb = !!lesson.thumb_url;
-      const rowStyle = hasThumb
-        ? `background-image:url('${lesson.thumb_url}?v=${Date.now()}')`
-        : '';
       const rowClass = hasThumb ? 'tut-lesson-row has-thumb' : 'tut-lesson-row';
       const openLesson = () => {
         state.activeLessonId = lesson.id;
         state.view = { kind: 'lesson' };
         render();
       };
+      const meta = el('div', { class: 'tut-lesson-meta', style: 'flex:1' }, [
+        el('strong', null, `${idx + 1}. ${lesson.title || lesson.id}`),
+        el('div', { class: 'tut-lesson-tags' },
+          (lesson.techniques || []).join(' · ')),
+      ]);
+      const stateEl = el('div', { class: `tut-lesson-state ${stateClass}` }, [
+        stateLabel,
+        st.best_accuracy ? ` · best ${(st.best_accuracy * 100).toFixed(0)}%` : '',
+      ].join(''));
+      // has-thumb: full banner on top + caption (name/tags + status) below,
+      // so 100% of the thumbnail shows and the lesson name stays visible.
+      // no-thumb: original gradient card with the meta overlaid.
+      const children = hasThumb
+        ? [
+            el('div', {
+              class: 'tut-lesson-thumb',
+              style: `background-image:url('${lesson.thumb_url}?v=${Date.now()}')`,
+            }),
+            el('div', { class: 'tut-lesson-caption' }, [meta, stateEl]),
+          ]
+        : [el('div', { class: 'tut-lesson-overlay' }), meta, stateEl];
       list.appendChild(el('div', {
         class: rowClass,
-        style: rowStyle,
         role: 'button',
         tabindex: '0',
         onclick: openLesson,
         onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLesson(); } },
-      }, [
-        el('div', { class: 'tut-lesson-overlay' }),
-        el('div', { class: 'tut-lesson-meta', style: 'flex:1' }, [
-          el('strong', null, `${idx + 1}. ${lesson.title || lesson.id}`),
-          el('div', { class: 'tut-lesson-tags' },
-            (lesson.techniques || []).join(' · ')),
-        ]),
-        el('div', { class: `tut-lesson-state ${stateClass}` }, [
-          stateLabel,
-          st.best_accuracy ? ` · best ${(st.best_accuracy * 100).toFixed(0)}%` : '',
-        ].join('')),
-      ]));
+      }, children));
     });
     root.appendChild(header);
     root.appendChild(list);

@@ -26,7 +26,7 @@
       "title": "Notes & sustain",
       "video": {
         "type": "file",
-        "src": ""
+        "src": "videos/l1.webm"
       },
       "exercise": {
         "sloppak": "tutorials-builtin/reading-the-highway/Tutorial_Reading_the_Highway_L1.sloppak",
