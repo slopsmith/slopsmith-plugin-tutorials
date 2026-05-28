@@ -406,7 +406,12 @@
           return;
         }
         state.pendingRun = { packId, lessonId };
-        window.playSong(libraryFilename, arrArg);
+        try {
+          window.playSong(libraryFilename, arrArg);
+        } catch (err) {
+          state.pendingRun = null;
+          alert(`Could not start exercise: ${err.message}`);
+        }
       },
     }, 'Start exercise');
     ex.appendChild(startBtn);
@@ -429,7 +434,9 @@
       ]),
       el('div', { class: 'tut-form-row', style: 'flex:0 0 120px' }, [
         el('label', null, 'Speed'),
-        el('input', { type: 'number', name: 'speed', min: '0.5', max: '1.5', step: '0.1', value: '1.0', required: '' }),
+        // max matches RunRecord.speed upper bound (2.0) so lessons with
+        // mastery.speed thresholds above 1.5 are reachable.
+        el('input', { type: 'number', name: 'speed', min: '0.5', max: '2.0', step: '0.1', value: '1.0', required: '' }),
       ]),
       el('button', { type: 'submit', class: 'tut-btn' }, 'Record run'),
     ]);
