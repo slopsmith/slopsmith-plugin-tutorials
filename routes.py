@@ -835,6 +835,8 @@ def setup(app: FastAPI, context: dict) -> None:
             raise HTTPException(400, "Filename escapes DLC directory")
         if not src_resolved.is_file():
             raise HTTPException(404, f"Library sloppak not found: {body.filename}")
+        if src_resolved.suffix.lower() != ".sloppak":
+            raise HTTPException(400, "Only .sloppak files may be copied into a pack")
 
         dst = sloppaks_dir / src_resolved.name
         with _lock:
