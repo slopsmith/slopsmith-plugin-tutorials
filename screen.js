@@ -113,18 +113,51 @@
     });
 
     // Pick up navigation payloads (e.g. another plugin deep-linking us).
-    if (window.slopsmith && typeof window.slopsmith.getNavParams === 'function') {
-      const params = window.slopsmith.getNavParams();
-      if (params && params.packId) {
-        state.activePackId = params.packId;
-        state.activeLessonId = params.lessonId || null;
-        state.view = state.activeLessonId
-          ? { kind: 'lesson' }
-          : { kind: 'pack' };
-      }
-    }
+    consumeNavParams();
 
     refreshAndRender();
+  }
+
+  // Read a pending navigate() payload and route to the deep-linked pack/lesson.
+  // Returns true when params were applied. Called from init() (first load) and
+  // from the screen:changed listener — init() runs only on plugin load, not on
+  // every navigation, so without the listener a navigate() that arrives later
+  // (e.g. from the v3 Lessons catalog) would never open the requested lesson.
+  function consumeNavParams() {
+    if (!window.slopsmith || typeof window.slopsmith.getNavParams !== 'function') return false;
+    const params = window.slopsmith.getNavParams();
+    if (!params || !params.packId) return false;
+    // A deep-link always lands in Browse, never Author: render() short-circuits
+    // to the Author view while state.mode === 'author' (it persists across screen
+    // exits), so without this the requested pack/lesson would never show.
+    state.mode = 'browse';
+    state.activePackId = params.packId;
+    state.activeLessonId = params.lessonId || null;
+    state.view = state.activeLessonId ? { kind: 'lesson' } : { kind: 'pack' };
+    return true;
+  }
+
+  // Register the screen:changed listener exactly once. Idempotent and callable
+  // from both the cold-load and hot-reload paths (guarded by a flag on the
+  // singleton) so a hot-reload over a pre-change instance — which never ran the
+  // cold-load registration — still binds the deep-link handler without a full
+  // page reload. Dispatches through the singleton so it calls the live closure.
+  function bindScreenChangedOnce() {
+    if (!window.slopsmith || typeof window.slopsmith.on !== 'function') return;
+    if (window.slopsmithTutorials && window.slopsmithTutorials.__screenChangedBound) return;
+    window.slopsmith.on('screen:changed', (e) => {
+      if (window.slopsmithTutorials?._onScreenChanged) {
+        window.slopsmithTutorials._onScreenChanged(e);
+      }
+    });
+    if (window.slopsmithTutorials) window.slopsmithTutorials.__screenChangedBound = true;
+  }
+
+  // screen:changed handler — consume a deep-link payload on (re)entry to our
+  // screen and re-render to the target view.
+  function onScreenChanged(e) {
+    if (!e || !e.detail || e.detail.id !== 'plugin-tutorials') return;
+    if (consumeNavParams()) refreshAndRender();
   }
 
   async function refreshAndRender() {
@@ -1158,6 +1191,9 @@
     // freshly-inserted DOM nodes.
     window.slopsmithTutorials.refresh = refreshAndRender;
     window.slopsmithTutorials._onSongEnded = onSongEnded;
+    window.slopsmithTutorials._onScreenChanged = onScreenChanged;
+    // Bind the deep-link listener if a pre-change instance never did.
+    bindScreenChangedOnce();
     init();
     return;
   }
@@ -1166,6 +1202,7 @@
     __alive: true,
     refresh: refreshAndRender,
     _onSongEnded: onSongEnded,
+    _onScreenChanged: onScreenChanged,
   };
 
   // Register the stable song:ended wrapper exactly once (on first load).
@@ -1179,6 +1216,8 @@
       }
     });
   }
+  // Deep-link consumption on (re)entry to our screen — bound once, idempotently.
+  bindScreenChangedOnce();
 
   // Hydration timing: the host plugin loader removes and re-appends the
   // plugin's screen.html on each loadPlugins() pass, so DOMContentLoaded
