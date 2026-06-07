@@ -630,10 +630,83 @@
     }
   }
 
+  // In-app text prompt — window.prompt() is not implemented in the Electron
+  // desktop app (it returns null), so pack authoring was a silent no-op there.
+  // Returns the entered string, or null on Esc/Cancel/backdrop; Enter submits.
+  // Module-private (inside this IIFE). Injection-safe: caller text is set via
+  // textContent/value, never innerHTML.
+  function tutUiPrompt({ title = '', label = '', value = '', okLabel = 'OK', placeholder = '' } = {}) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'slopsmith-modal fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      if (title) modal.setAttribute('aria-label', title);
+      modal.innerHTML = `
+        <form class="bg-dark-700 border border-gray-700 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
+          <h3 class="text-lg font-bold text-white mb-4" data-tut-prompt-title hidden></h3>
+          <label class="text-xs text-gray-400 mb-1 block" data-tut-prompt-label hidden></label>
+          <input type="text" data-tut-prompt-input autocomplete="off"
+            class="w-full bg-dark-600 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 outline-none focus:border-accent/50">
+          <div class="flex gap-3 mt-5">
+            <button type="submit"
+              class="flex-1 bg-accent hover:bg-accent-light px-4 py-2 rounded-xl text-sm font-semibold text-white transition" data-tut-prompt-ok></button>
+            <button type="button" data-tut-prompt-cancel
+              class="px-4 py-2 bg-dark-600 hover:bg-dark-500 rounded-xl text-sm text-gray-300 transition">Cancel</button>
+          </div>
+        </form>`;
+      const titleEl = modal.querySelector('[data-tut-prompt-title]');
+      const labelEl = modal.querySelector('[data-tut-prompt-label]');
+      const input = modal.querySelector('[data-tut-prompt-input]');
+      const okEl = modal.querySelector('[data-tut-prompt-ok]');
+      if (title) { titleEl.textContent = title; titleEl.hidden = false; }
+      if (label) { labelEl.textContent = label; labelEl.hidden = false; }
+      okEl.textContent = okLabel;
+      input.value = value;
+      if (placeholder) input.placeholder = placeholder;
+
+      const previousActiveElement = document.activeElement;
+      const focusables = () => Array.from(
+        modal.querySelectorAll('input, button, [tabindex]:not([tabindex="-1"])'),
+      ).filter((el) => !el.disabled && el.offsetParent !== null);
+
+      let settled = false;
+      const close = (result) => {
+        if (settled) return;
+        settled = true;
+        document.removeEventListener('keydown', onKey, true);
+        modal.remove();
+        if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+          previousActiveElement.focus();
+        }
+        resolve(result);
+      };
+      const onKey = (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(null); return; }
+        if (e.key === 'Tab') {
+          const items = focusables();
+          if (!items.length) return;
+          const first = items[0];
+          const last = items[items.length - 1];
+          const active = document.activeElement;
+          if (e.shiftKey && (active === first || !modal.contains(active))) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && (active === last || !modal.contains(active))) { e.preventDefault(); first.focus(); }
+        }
+      };
+      modal.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); close(input.value); });
+      modal.querySelector('[data-tut-prompt-cancel]').addEventListener('click', () => close(null));
+      modal.addEventListener('mousedown', (e) => { if (e.target === modal) close(null); });
+      document.addEventListener('keydown', onKey, true);
+      document.body.appendChild(modal);
+      input.focus();
+      input.select();
+    });
+  }
+
   async function promptNewPack() {
-    const id = prompt('Pack id (lowercase, a-z0-9_-):');
+    const id = await tutUiPrompt({ title: 'New Pack', label: 'Pack id (lowercase, a-z0-9_-)', okLabel: 'Create' });
     if (!id) return;
-    const title = prompt('Pack title:') || id;
+    const title = (await tutUiPrompt({ title: 'New Pack', label: 'Pack title', value: id, okLabel: 'Create' })) || id;
     try {
       const manifest = await api('/packs', {
         method: 'POST',
