@@ -1,7 +1,7 @@
 {
   "id": "tutorials",
   "name": "Tutorials",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "screen": "screen.html",
   "script": "screen.js",
