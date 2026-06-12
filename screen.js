@@ -516,14 +516,14 @@
     if (resultBox) {
       resultBox.style.display = 'block';
       resultBox.classList.remove('is-pass', 'is-mastery', 'is-fail');
-      resultBox.innerHTML = 'Exercise finished. Enter your accuracy and tap <strong>Record run</strong> to log XP.';
+      resultBox.innerHTML = 'Exercise finished. Enter your accuracy and tap <strong>Record run</strong> to earn dB.';
     }
   }
 
   async function submitRun({ packId, lessonId, accuracy, score, speed, lesson }, resultBox) {
     let tutorialResult, minigamesResult;
     try {
-      // Post to minigames first so we can show the XP-gained number
+      // Post to minigames first so we can show the dB-gained number
       // even if our local progress write fails (unlikely, but graceful).
       const gameId = `tutorial:${packId}:${lessonId}`;
       const mgRes = await fetch(MINIGAMES_RUNS_URL, {
@@ -569,7 +569,7 @@
       ` — accuracy ${(accuracy * 100).toFixed(0)}% at ${speed.toFixed(1)}× speed`));
     if (xpGained > 0) {
       resultBox.appendChild(el('div', null,
-        `+${xpGained} XP${level != null ? ` · Level ${level}` : ''}`));
+        `+${xpGained} dB`));
     }
     if (tutorialResult?.first_pass) {
       resultBox.appendChild(el('div', null, 'First time passing this lesson! 🎉'));
@@ -1008,11 +1008,11 @@
       formRow('Techniques', techNode),
     ));
     node.appendChild(twoCol(
-      formRow('XP — pass (informational)', xpPassInput),
-      formRow('XP — mastery (informational)', xpMastInput),
+      formRow('dB — pass (informational)', xpPassInput),
+      formRow('dB — mastery (informational)', xpMastInput),
     ));
     node.appendChild(el('p', { style: 'margin:0 0 0.5rem;color:var(--tut-muted);font-size:0.8rem' },
-      'XP values are saved in the manifest for future use. Currently all lessons award a fixed XP amount through the minigames profile regardless of these fields.'));
+      'Reward values are saved in the manifest for future use. Currently all lessons award a fixed amount of Decibels (dB) through the minigames profile regardless of these fields.'));
     node.appendChild(el('div', { class: 'tut-row-buttons' }, [removeBtn]));
     return node;
   }
@@ -1200,13 +1200,13 @@
       el('h2', { style: 'margin:0 0 0.5rem;color:var(--tut-text);font-size:1.2rem' },
         'Build a tutorial pack'),
       el('p', { style: 'margin:0 0 0.75rem' },
-        'A pack bundles short intro videos with exercise sloppaks. Each lesson awards XP through the minigames profile when you pass it.'),
+        'A pack bundles short intro videos with exercise sloppaks. Each lesson awards Decibels (dB) through the minigames profile when you pass it.'),
       el('p', { style: 'margin:0 0 0.5rem' }, 'To get started:'),
       el('ol', { style: 'margin:0 0 0.75rem 1.25rem;padding:0;text-align:left;display:inline-block' }, [
         el('li', null, 'Click + New pack on the left to create a pack.'),
         el('li', null, 'Add lessons — paste a YouTube URL or upload a webm/mp4 for the intro.'),
         el('li', null, 'Pick an exercise sloppak from your library and copy it into the pack.'),
-        el('li', null, 'Set pass / mastery thresholds and XP rewards.'),
+        el('li', null, 'Set pass / mastery thresholds and dB rewards.'),
         el('li', null, 'Save, then switch to Browse to play it.'),
       ]),
       el('p', { style: 'margin:0;font-size:0.85rem' },
