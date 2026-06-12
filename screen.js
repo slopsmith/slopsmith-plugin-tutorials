@@ -1206,7 +1206,7 @@
         el('li', null, 'Click + New pack on the left to create a pack.'),
         el('li', null, 'Add lessons — paste a YouTube URL or upload a webm/mp4 for the intro.'),
         el('li', null, 'Pick an exercise sloppak from your library and copy it into the pack.'),
-        el('li', null, 'Set pass / mastery thresholds and dB rewards.'),
+        el('li', null, 'Set pass / mastery thresholds (reward fields are informational).'),
         el('li', null, 'Save, then switch to Browse to play it.'),
       ]),
       el('p', { style: 'margin:0;font-size:0.85rem' },
